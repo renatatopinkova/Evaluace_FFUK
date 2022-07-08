@@ -28,8 +28,10 @@ class(browser)
 
 browser$open()
 
+url <- "https://hodnoceni.ff.cuni.cz/results/evaluation/summer-term-20212022/course/21bASGV10005p1"
+
 # navigate to evaluace
-browser$navigate("https://hodnoceni.ff.cuni.cz/results/evaluation/summer-term-20212022/course/21bASGV10005p1")
+browser$navigate(url)
 
 # get course name
 course_name <- browser$findElement("class", "ev--page-title")$getElementText()
@@ -43,7 +45,8 @@ teacher_box <- browser$findElements("class", "teacher-boxs") %>%
   map(~.x$getElementText()) %>% 
   # clean it
   map(~str_remove_all(.x, pattern = "\nodrazující\nvynikající\n")) %>%
-  map(~str_split(.x, "\\n"))
+  map(~str_split(.x, "\\n")) %>% 
+  flatten()
 
 # get average course rating
 avg_course <- browser$findElement("class", "course-average-rating")$getElementText() %>%
@@ -53,7 +56,10 @@ avg_course <- browser$findElement("class", "course-average-rating")$getElementTe
 # get each question, n of answers, and average answer
 rating <- browser$findElements("class", "results-question-item") %>% 
   map(~.x$getElementText()) %>%
-  map(~str_split(.x, pattern = "\\n"))
+  map(~str_split(.x, pattern = "\\n")) %>% 
+  flatten() 
+
+
 
 # get N of ratings and N of students
 n_rating <- browser$findElements("class", "ta-r") %>%
@@ -85,4 +91,17 @@ negative <- browser$findElements("css", ".ev--dark-text p") %>%
 
 # Putting it together ??  -------------------------------------------------
 
+comments <- list(negative = flatten(negative), 
+                 positive = flatten(positive))
 
+
+
+tibble(course_name = course_name, avg = avg_course, rated = n_rating[[1]], n_students = n_rating[[2]], url = url) %>%
+  unnest(everything())
+
+
+tibble(course_name = course_name, url = url, teacher = teacher_box) %>%
+  unnest(everything()) %>% 
+  mutate(teacher_rating = as.numeric(str_extract(teacher, "\\d+\\.?\\d*")),
+         teacher = str_trim(str_remove(teacher, "\\d+\\.?\\d*%")))
+  
