@@ -36,7 +36,7 @@ browser$navigate(url)
 
 # Start scraping ----------------------------------------------------------
 
-
+## NOTE: urls obtained by script 1
 
 ## Get basic course info ---------------------------------------------------
 
