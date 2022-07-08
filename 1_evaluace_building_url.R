@@ -2,7 +2,7 @@
 
 library(RSelenium)
 library(wdman)
-library(plyr)
+library(dplyr)
 library(tidyr)
 library(purrr)
 
